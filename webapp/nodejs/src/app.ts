@@ -11,6 +11,8 @@ import morgan from "morgan";
 import multer, { MulterError } from "multer";
 import mysql, { RowDataPacket } from "mysql2/promise";
 import qs from "qs";
+import * as pprof from "pprof";
+import * as fs from "fs";
 
 interface Config extends RowDataPacket {
   name: string;
@@ -104,6 +106,19 @@ interface TrendCondition {
   isu_id: number;
   timestamp: number;
 }
+
+(async function prof() {
+  const profile = await pprof.time.profile({
+    durationMillis: 100000, // time in milliseconds for which to
+    // collect profile.
+  });
+  console.error("test");
+  const buf = await pprof.encode(profile);
+  fs.writeFile("wall.pb.gz", buf, (err) => {
+    if (err) throw err;
+  });
+  console.error("<<< finished to profile");
+})();
 
 const sessionName = "isucondition_nodejs";
 const conditionLimit = 20;
@@ -456,7 +471,7 @@ app.post(
             "INSERT INTO `isu` (`jia_isu_uuid`, `name`, `image`, `jia_user_id`) VALUES (?, ?, ?, ?)",
             [jiaIsuUUID, isuName, image, jiaUserId]
           );
-        } catch (err) {
+        } catch (err: any) {
           await db.rollback();
           if (err.errno === mysqlErrNumDuplicateEntry) {
             return res.status(409).type("text").send("duplicated: isu");
