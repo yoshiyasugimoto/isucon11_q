@@ -11,6 +11,7 @@ go install github.com/google/pprof@latest
 2. 実行 ※サーバからローカルに`wall.pb.gz`(rsync)
 
 ```
+cd webapp/nodejs
 ~/go/1.18.3/bin/pprof -http=: wall.pb.gz
 ```
 
